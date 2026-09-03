@@ -1,0 +1,297 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ typography
+   Keep the stack fully local/offline and deterministic.
+   The previous build referenced a missing woff2 file, which made production
+   builds non-reproducible. Until a real local font asset is committed, use the
+   platform rounded-ui stack only. */
+:root {
+  font-family: 'Arial Rounded MT Bold', 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+  /* Safe-area insets as reusable variables (0 on desktop / older WebViews). */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  /* Banner ad height, driven by React (0 when hidden / Remove Ads owned). */
+  --ad-h: 0px;
+  /* Design tokens */
+  --gold: #ffd166;
+  --gold-deep: #f2b62a;
+  --wood: #6b3f1d;
+  --cream: #fff4dd;
+  --glass: rgba(24, 14, 40, 0.62);
+  --glass-strong: rgba(24, 14, 40, 0.82);
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: #1a1030;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ safe-area utilities
+   Combine padding + the banner reservation in one place so every overlay
+   clears the notch / Dynamic Island / gesture bar AND the ad banner. */
+@layer utilities {
+  .safe-t { padding-top: var(--sat); }
+  .safe-b { padding-bottom: calc(var(--sab) + var(--ad-h)); }
+  .safe-x { padding-left: var(--sal); padding-right: var(--sar); }
+  .safe-all { padding: var(--sat) var(--sar) calc(var(--sab) + var(--ad-h)) var(--sal); }
+  .safe-mt { margin-top: var(--sat); }
+  .safe-mb { margin-bottom: calc(var(--sab) + var(--ad-h)); }
+}
+/* Everything inside .game-frame is already within the safe box (see .app-root),
+   so the utilities collapse to 0 there and only take effect on document-level
+   overlays such as the banner slot. */
+.game-frame { --sat: 0px; --sar: 0px; --sab: 0px; --sal: 0px; --ad-h: 0px; }
+
+/* The native shell fills the screen; the playfield sits inside the safe box
+   and above the banner slot. */
+.app-root {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  padding: var(--sat) var(--sar) calc(var(--sab) + var(--ad-h)) var(--sal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: padding-bottom 0.25s ease;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(120, 80, 200, 0.35), transparent 55%),
+    radial-gradient(ellipse at 80% 90%, rgba(60, 160, 240, 0.3), transparent 55%),
+    linear-gradient(180deg, #1a1030 0%, #0d0a1c 100%);
+}
+
+.game-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 20px 60px rgba(0, 0, 0, 0.6);
+  font-family: 'Fredoka', 'Baloo 2', 'Nunito', 'Arial Rounded MT Bold', system-ui, sans-serif;
+}
+@media (min-width: 640px) and (min-height: 700px) { .game-frame { border-radius: 22px; } }
+
+canvas { display: block; touch-action: none; }
+
+/* ------------------------------------------------------------------ text treatments */
+.game-title-shadow {
+  text-shadow:
+    0 2px 0 rgba(40, 20, 10, 0.9),
+    0 0 14px rgba(0, 0, 0, 0.45),
+    0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.glass-text {
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.55), 0 0 18px rgba(255, 209, 102, 0.25);
+}
+
+.logo-raccoon {
+  color: #ffb62e;
+  background: linear-gradient(180deg, #ffe27a 0%, #ffb62e 55%, #f2861f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 #7a3a10) drop-shadow(0 6px 0 rgba(60, 20, 10, 0.6)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+}
+.logo-sky {
+  color: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #bfe9ff 60%, #6cc3ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 #1f5b9e) drop-shadow(0 6px 0 rgba(10, 40, 80, 0.6)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+}
+
+/* ------------------------------------------------------------------ glassmorphic panels */
+.glass-panel {
+  position: relative;
+  border-radius: 1.6rem;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.12)),
+    var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1.5px solid rgba(255, 209, 102, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 0 0 1px rgba(255, 209, 102, 0.12),
+    0 0 0 4px rgba(255, 209, 102, 0.06),
+    0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.glass-panel::before {
+  /* neon inner ring */
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: calc(1.6rem - 5px);
+  border: 1px solid rgba(255, 209, 102, 0.22);
+  box-shadow: inset 0 0 22px rgba(255, 209, 102, 0.10);
+  pointer-events: none;
+}
+.glass-inner {
+  border-radius: 1.1rem;
+  background: linear-gradient(180deg, rgba(255, 244, 221, 0.97), rgba(243, 226, 195, 0.97));
+  border: 1px solid rgba(226, 200, 154, 0.9);
+  box-shadow: inset 0 1px 0 #fff, 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+.glass-chip {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255, 209, 102, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 6px 16px rgba(0,0,0,0.35);
+}
+.glass-tab {
+  background: rgba(24, 14, 40, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+.glass-tab-active {
+  background: linear-gradient(180deg, #ffe27a, #f2b62a);
+  border-color: #b57a10;
+  color: #5a3410;
+  box-shadow: 0 0 18px rgba(255, 209, 102, 0.45);
+}
+
+/* Store cards */
+.store-card {
+  position: relative;
+  border-radius: 1.25rem;
+  transition: transform 120ms ease, box-shadow 200ms ease, filter 200ms ease;
+}
+.store-card:active { transform: scale(0.95); }
+.store-card--owned { background: linear-gradient(180deg, #e9fbe4, #cdeec6); border: 1.5px solid #6fcf3f; }
+.store-card--selected { background: linear-gradient(180deg, #fff6d6, #ffe4a3); border: 1.5px solid #f2b62a; box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.55), 0 0 26px rgba(255, 209, 102, 0.55); }
+.store-card--locked { background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04)); border: 1.5px solid rgba(255,255,255,0.14); }
+.store-card--locked .store-thumb { filter: grayscale(0.7) brightness(0.75) contrast(1.05); }
+.store-card--premium::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(from var(--spin, 0deg), rgba(255, 209, 102, 0), rgba(255, 209, 102, 0.9), rgba(255, 255, 255, 0.9), rgba(255, 209, 102, 0));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 2px;
+  animation: spinBorder 3.2s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 209, 102, 0.8));
+}
+.store-card--premium .store-thumb { filter: drop-shadow(0 0 10px rgba(255, 220, 120, 0.85)) saturate(1.15); }
+@property --spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes spinBorder { to { --spin: 360deg; } }
+
+/* ------------------------------------------------------------------ motion */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { 0% { transform: scale(0.72) translateY(24px); opacity: 0; } 70% { transform: scale(1.04) translateY(-3px); opacity: 1; } 100% { transform: scale(1) translateY(0); } }
+@keyframes slideUp { from { transform: translateY(18px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes floaty { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-6px) rotate(8deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(95, 214, 72, 0.0), 0 6px 14px rgba(40,20,0,0.25); } 50% { box-shadow: 0 0 0 10px rgba(95, 214, 72, 0.0), 0 0 28px rgba(95, 214, 72, 0.55), 0 6px 14px rgba(40,20,0,0.25); } }
+@keyframes toast { 0% { transform: translate(-50%, -30px); opacity: 0; } 12% { transform: translate(-50%, 0); opacity: 1; } 85% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, -20px); opacity: 0; } }
+@keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes adBar { from { width: 100%; } to { width: 0%; } }
+
+.anim-fade { animation: fadeIn 0.25s ease-out both; }
+.anim-pop { animation: popIn 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.anim-slide-up { animation: slideUp 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.anim-float { display: inline-block; animation: floaty 2.4s ease-in-out infinite; }
+.anim-pulse { animation: pulse 1.6s ease-in-out infinite; }
+.anim-glow { animation: glowPulse 1.8s ease-in-out infinite; }
+.anim-toast { animation: toast 3.2s ease-in-out both; }
+.shimmer {
+  background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+.stagger > * { animation: slideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.stagger > :nth-child(1) { animation-delay: 0ms; }
+.stagger > :nth-child(2) { animation-delay: 40ms; }
+.stagger > :nth-child(3) { animation-delay: 80ms; }
+.stagger > :nth-child(4) { animation-delay: 120ms; }
+.stagger > :nth-child(5) { animation-delay: 160ms; }
+.stagger > :nth-child(6) { animation-delay: 200ms; }
+.stagger > :nth-child(n+7) { animation-delay: 240ms; }
+
+.game-btn { -webkit-touch-callout: none; touch-action: manipulation; }
+
+/* ------------------------------------------------------------------ short-screen compaction
+   Applied by React via [data-short] on .game-frame when the playable frame is
+   under 620px tall (small phones, split-screen). Reflows instead of shrinking:
+   the logo steps down a size and the home cluster tightens its rhythm. */
+.game-frame[data-short='true'] .logo-raccoon { font-size: 2.3rem; }
+.game-frame[data-short='true'] .logo-sky { font-size: 1.5rem; }
+.game-frame[data-short='true'] .home-cluster { gap: 0.5rem; padding-bottom: 0.75rem; }
+.game-frame[data-short='true'] .home-hint { display: none; }
+.game-frame[data-short='true'] .home-cluster .game-btn { padding-top: 0.45rem; padding-bottom: 0.45rem; }
+
+/* ------------------------------------------------------------------ sensitivity slider
+   Styled to sit inside the existing cream/wood control panel. */
+.rsj-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+.rsj-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #e5cd9f, #ffd166);
+  border: 1px solid #b57a10;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.rsj-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fff8e8, #f1dfc0);
+  border: 2px solid #b8925f;
+  margin-top: -8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 120ms ease;
+}
+.rsj-range:active::-webkit-slider-thumb { transform: scale(1.15); }
+.rsj-range::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #e5cd9f, #ffd166);
+  border: 1px solid #b57a10;
+}
+.rsj-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff8e8;
+  border: 2px solid #b8925f;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.rsj-range:focus-visible { outline: 3px solid rgba(255, 209, 102, 0.7); outline-offset: 2px; border-radius: 9999px; }
+.tap { transition: transform 120ms ease, filter 120ms ease; }
+.tap:active { transform: scale(0.95); filter: brightness(1.08); }
+
+/* Thin, unobtrusive scrollbars inside menus */
+.scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(255,209,102,0.5) transparent; touch-action: pan-y; }
+.scroll-y::-webkit-scrollbar { width: 4px; }
+.scroll-y::-webkit-scrollbar-thumb { background: rgba(255,209,102,0.5); border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pulse, .anim-glow, .anim-float, .shimmer, .store-card--premium::after { animation: none; }
+}

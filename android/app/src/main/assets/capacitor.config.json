@@ -1,0 +1,31 @@
+{
+	"appId": "com.raccoonskyjump.game",
+	"appName": "Raccoon Sky Jump",
+	"webDir": "dist",
+	"android": {
+		"webContentsDebuggingEnabled": true,
+		"backgroundColor": "#1a1030",
+		"allowMixedContent": false
+	},
+	"ios": {
+		"contentInset": "never",
+		"backgroundColor": "#1a1030",
+		"preferredContentMode": "mobile"
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0,
+			"launchAutoHide": false,
+			"backgroundColor": "#1a1030",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": false,
+			"splashFullScreen": true,
+			"splashImmersive": false
+		},
+		"StatusBar": {
+			"style": "DARK",
+			"backgroundColor": "#1a1030",
+			"overlaysWebView": false
+		}
+	}
+}

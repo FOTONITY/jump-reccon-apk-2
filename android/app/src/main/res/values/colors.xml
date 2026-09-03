@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Raccoon Sky Jump palette -->
+    <color name="colorPrimary">#1a1030</color>
+    <color name="colorPrimaryDark">#0d0a1c</color>
+    <color name="colorAccent">#5fd648</color>
+
+    <!-- Launch / splash background: matches .app-root so there is no white flash -->
+    <color name="splashBackground">#1a1030</color>
+    <color name="statusBarColor">#1a1030</color>
+    <color name="navigationBarColor">#0d0a1c</color>
+</resources>

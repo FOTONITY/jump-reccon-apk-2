@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Raccoon Sky Jump</string>
+    <string name="title_activity_main">Raccoon Sky Jump</string>
+    <string name="package_name">com.raccoonskyjump.game</string>
+    <string name="custom_url_scheme">com.raccoonskyjump.game</string>
+</resources>

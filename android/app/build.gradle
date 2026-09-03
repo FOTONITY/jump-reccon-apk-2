@@ -1,0 +1,101 @@
+apply plugin: 'com.android.application'
+
+// ---------------------------------------------------------------------------
+// AdMob APPLICATION_ID wiring (no secrets in source).
+// Supply your real id at release time via either:
+//   ./gradlew bundleRelease -PADMOB_ANDROID_APP_ID=ca-app-pub-XXXX~YYYY
+//   android/local.properties  (git-ignored):  ADMOB_ANDROID_APP_ID=ca-app-pub-XXXX~YYYY
+// The default below is Google's SAMPLE application id, which can only serve
+// test ads. Release assembly is refused while it is still in place (see the
+// taskGraph guard below), so a test id can never ship as production.
+// ---------------------------------------------------------------------------
+def SAMPLE_ADMOB_APP_ID = 'ca-app-pub-3940256099942544~3347511713'
+def admobAppId = (project.findProperty('ADMOB_ANDROID_APP_ID') ?: SAMPLE_ADMOB_APP_ID).toString()
+
+android {
+    namespace "com.raccoonskyjump.game"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.raccoonskyjump.game"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
+        manifestPlaceholders = [admobApplicationId: admobAppId]
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            shrinkResources false
+        }
+        release {
+            // R8 code shrinking + obfuscation and unused-resource stripping for store builds.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Signing stays OUT of source control. Create android/keystore.properties
+            // (git-ignored) and uncomment:
+            // signingConfig signingConfigs.release   // see ANDROID.md §7 / RELEASE.md
+        }
+    }
+}
+
+// Safety net: refuse release assembly while the AdMob APPLICATION_ID is still
+// Google's sample id. Debug builds are unaffected.
+gradle.taskGraph.whenReady { graph ->
+    def releaseBuild = graph.allTasks.any { it.project == project && (it.name == 'assembleRelease' || it.name == 'bundleRelease') }
+    if (releaseBuild && admobAppId == SAMPLE_ADMOB_APP_ID) {
+        throw new GradleException(
+            "Release build refused: AdMob APPLICATION_ID is still Google's sample id.\n" +
+            "Provide your real id:  -PADMOB_ANDROID_APP_ID=ca-app-pub-XXXXXXXX~YYYYYYYY\n" +
+            "or add ADMOB_ANDROID_APP_ID=... to android/local.properties (git-ignored).")
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+
+    // Firebase — only the three services the game actually uses (Auth for
+    // anonymous/Google sign-in, Firestore for optional cloud save + leaderboard,
+    // Analytics behind an explicit consent gate). Activated only when
+    // google-services.json is present, matching the conditional plugin apply at
+    // the bottom of this file. Unconfigured checkouts stay lean.
+    if (file('google-services.json').exists()) {
+        implementation platform('com.google.firebase:firebase-bom:33.10.0')
+        implementation 'com.google.firebase:firebase-analytics'
+        implementation 'com.google.firebase:firebase-auth'
+        implementation 'com.google.firebase:firebase-firestore'
+    }
+
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
