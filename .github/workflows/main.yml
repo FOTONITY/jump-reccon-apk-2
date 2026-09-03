@@ -32,10 +32,11 @@ jobs:
           npm run build
           npx cap sync android
 
-      - name: Generate Gradle Wrapper
+      - name: Fix Adaptive Icon XML References
         run: |
-          cd android
-          gradle wrapper --gradle-version 8.10.2
+          # Automatically point adaptive icon XMLs to drawable assets if they reference missing mipmaps
+          find android/app/src/main/res/mipmap-anydpi-v26 -name "*.xml" -exec sed -i 's|@mipmap/ic_launcher_background|@drawable/ic_launcher_background|g' {} +
+          find android/app/src/main/res/mipmap-anydpi-v26 -name "*.xml" -exec sed -i 's|@mipmap/ic_launcher_foreground|@drawable/ic_launcher_foreground|g' {} +
 
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
